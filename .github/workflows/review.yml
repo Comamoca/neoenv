@@ -1,0 +1,22 @@
+name: "Review"
+
+on:
+  pull_request:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clippy
+        runs-on: ubuntu-latest
+
+        steps:
+          - uses: actions/checkout@v3
+          - uses: dtolnay/rust-toolchain@stable
+            with:
+              components: clippy
+          - uses: giraffate/clippy-action@v1
+            with:
+              reporter: 'GitHub Automated Review'
+              github_token: ${{ secrets.GITHUB_TOKEN }}
