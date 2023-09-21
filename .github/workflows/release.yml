@@ -1,13 +1,6 @@
 name: Release
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    - main
-  release:
-    types: [created]
+on: [push, pull_request, release]
 
 jobs:
   build:
