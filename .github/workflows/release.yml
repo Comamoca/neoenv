@@ -1,9 +1,13 @@
 name: Release
 
-on: [push, pull_request, release]
+on: [pull_request, release]
 
 jobs:
   build:
+    # TODO: create new release permission
+    permissions:
+      pull-requests: write
+
     name: build ${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
