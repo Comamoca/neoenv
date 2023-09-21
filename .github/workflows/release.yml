@@ -1,32 +1,56 @@
 name: Release
 
 on:
+  push:
+  pull_request:
+    - main
   release:
     types: [created]
 
 jobs:
-  release:
-    name: release ${{ matrix.target }}
+  build:
+    name: build ${{ matrix.target }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        target: [x86_64-pc-windows-gnu, x86_64-unknown-linux-musl]
+        target: [x86_64-pc-windows-msvc, x86_64-unknown-linux-musl, x86_64-apple-darwin]
 
     steps:
       - uses: actions/checkout@master
-      - name: Compile and release
-        uses: rust-build/rust-build.action@v1.4.3
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-        with:
-          RUSTTARGET: ${{ matrix.target }}
-          EXTRA_FILES: "README.md LICENSE"
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
+      - name: Cache cargo registry
+        uses: actions/cache@v3
         with:
-          name: Binary
-          path: |
-            ${{ steps.compile.outputs.BUILT_ARCHIVE }}
-            ${{ steps.compile.outputs.BUILT_CHECKSUM }}
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v3
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: setup rust
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+      - name: Compile
+        run: |
+          $HOME/.cargo/bin/cargo build --release
+          zip neoenv-${{ matrix.target }} ./target/release/neoenv
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@2.1.1
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: neoenv_${{ matrix.target }}.zip
+          asset_name: neoenv-$tag-${{ matrix.target }}
+          tag: ${{ github.ref }}
+          overwrite: true
