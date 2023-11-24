@@ -125,7 +125,7 @@ pub fn save(envs: Vec<String>) {
     file.write_all(envs.join("\n").as_bytes()).unwrap();
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 pub fn gen_script(app_name: String) -> Result<String, String> {
     match std::env::var("SHELL") {
         Ok(shell) => {
