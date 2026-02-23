@@ -9,4 +9,4 @@ edition = "2021"
 clap = { version = "4.5.56", features = ["derive"] }
 inquire = "0.7.5"
 skim = "0.10.4"
-xdg = "2.5.2"
+xdg = "3.0.0"
